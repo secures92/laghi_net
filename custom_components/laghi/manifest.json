@@ -1,0 +1,10 @@
+{
+  "domain": "laghi",
+  "name": "Laghi.net",
+  "codeowners": ["secures92"],
+  "dependencies": [],
+  "documentation": "https://github.com/secures92/laghi_net",
+  "iot_class": "cloud_polling",
+  "requirements": ["requests-html", "lxml-html-clean"],
+  "version": "1.0.0"
+}
