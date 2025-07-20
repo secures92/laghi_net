@@ -18,6 +18,9 @@ This is a custom Home Assistant integration for monitoring Italian lake data fro
 
 ## Installation
 
+[![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=laghi)
+
+
 ### Manual Installation
 
 1. Copy the entire `custom_components/laghi/` folder to your Home Assistant `custom_components/` directory
