@@ -6,5 +6,5 @@
   "documentation": "https://github.com/secures92/laghi_net",
   "iot_class": "cloud_polling",
   "requirements": ["requests-html", "lxml-html-clean"],
-  "version": "1.0.0"
+  "version": "1.0.2"
 }

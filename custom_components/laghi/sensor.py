@@ -12,7 +12,6 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.update_coordinator import (
@@ -91,7 +90,11 @@ async def async_setup_entry(
     """Set up Laghi sensors from a config entry."""
     entry_data = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if entry_data is None or "coordinator" not in entry_data:
-        raise ConfigEntryError("Coordinator not initialized for Laghi config entry")
+        _LOGGER.error(
+            "Coordinator not found for Laghi config entry %s — skipping sensor setup",
+            entry.entry_id,
+        )
+        return
 
     coordinator: LaghiDataUpdateCoordinator = entry_data["coordinator"]
 
