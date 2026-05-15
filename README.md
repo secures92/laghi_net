@@ -2,6 +2,8 @@
 
 This is a custom Home Assistant integration for monitoring Italian lake data from laghi.net. It provides real-time monitoring of water levels, inflow, outflow, and fill percentages for major Italian lakes including Maggiore, Como, Iseo, Idro, and Garda.
 
+**Disclaimer:** This is an unofficial community project and is not related to, affiliated with, endorsed by, or maintained by laghi.net.
+
 ## Features
 
 - **Real-time Lake Monitoring**: Fetches live data from laghi.net REST API
@@ -33,7 +35,7 @@ This is a custom Home Assistant integration for monitoring Italian lake data fro
    │       ├── sensor.py
    │       ├── laghi.py
    │       ├── const.py
-   │       └── manifest.json
+  │       └── manifest.json
    ```
 
 2. Restart Home Assistant completely
@@ -100,3 +102,5 @@ This integration follows Home Assistant custom component best practices. Feel fr
 ## License
 
 This integration is provided as-is for monitoring Italian lake data. Data is sourced from laghi.net under their terms of service.
+
+All logos, brand names, and trademarks related to laghi.net are the property of their respective owners (laghi.net).
