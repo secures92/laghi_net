@@ -5,12 +5,14 @@ import logging
 from datetime import timedelta
 from typing import Any
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.sensor import (
     SensorEntity,
     SensorStateClass,
 )
 from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.update_coordinator import (
@@ -79,6 +81,37 @@ async def async_setup_platform(
                         )
     
     async_add_entities(entities, update_before_add=True)
+
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
+    """Set up Laghi sensors from a config entry."""
+    entry_data = hass.data.get(DOMAIN, {}).get(entry.entry_id)
+    if entry_data is None or "coordinator" not in entry_data:
+        raise ConfigEntryError("Coordinator not initialized for Laghi config entry")
+
+    coordinator: LaghiDataUpdateCoordinator = entry_data["coordinator"]
+
+    entities = []
+    if coordinator.data:
+        for lake_data in coordinator.data:
+            lake_name = lake_data["name"]
+            if lake_name in coordinator.configured_lakes:
+                for sensor_type, sensor_config in LAKE_SENSORS.items():
+                    if sensor_type in lake_data and "value" in lake_data[sensor_type]:
+                        entities.append(
+                            LaghiSensor(
+                                coordinator,
+                                lake_name,
+                                sensor_type,
+                                sensor_config,
+                            )
+                        )
+
+    async_add_entities(entities)
 
 
 class LaghiDataUpdateCoordinator(DataUpdateCoordinator):
