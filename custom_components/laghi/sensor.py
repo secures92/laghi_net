@@ -88,15 +88,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Laghi sensors from a config entry."""
-    entry_data = hass.data.get(DOMAIN, {}).get(entry.entry_id)
-    if entry_data is None or "coordinator" not in entry_data:
-        _LOGGER.error(
-            "Coordinator not found for Laghi config entry %s — skipping sensor setup",
-            entry.entry_id,
-        )
-        return
-
-    coordinator: LaghiDataUpdateCoordinator = entry_data["coordinator"]
+    coordinator: LaghiDataUpdateCoordinator = entry.runtime_data
 
     entities = []
     if coordinator.data:

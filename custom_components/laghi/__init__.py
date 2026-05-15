@@ -5,12 +5,11 @@ import logging
 from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_SCAN_INTERVAL
-from homeassistant.const import Platform
+from homeassistant.const import CONF_SCAN_INTERVAL, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryError
+from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
 
-from .const import AVAILABLE_LAKES, CONF_LAKES, DEFAULT_SCAN_INTERVAL, DOMAIN
+from .const import AVAILABLE_LAKES, CONF_LAKES, DEFAULT_SCAN_INTERVAL
 from .sensor import LaghiDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -20,8 +19,6 @@ PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Laghi.net from a config entry."""
-    hass.data.setdefault(DOMAIN, {})
-
     configured_lakes = entry.options.get(CONF_LAKES, AVAILABLE_LAKES)
     valid_lakes = [lake for lake in configured_lakes if lake in AVAILABLE_LAKES]
     invalid_lakes = [lake for lake in configured_lakes if lake not in AVAILABLE_LAKES]
@@ -45,25 +42,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         scan_interval = timedelta(seconds=scan_interval_seconds)
 
     coordinator = LaghiDataUpdateCoordinator(hass, scan_interval, valid_lakes)
-    await coordinator.async_config_entry_first_refresh()
 
-    hass.data[DOMAIN][entry.entry_id] = {
-        "coordinator": coordinator,
-    }
-    
+    try:
+        await coordinator.async_config_entry_first_refresh()
+    except ConfigEntryError:
+        raise
+    except Exception as err:
+        raise ConfigEntryNotReady(
+            f"Failed to fetch initial data from laghi.net: {err}"
+        ) from err
+
+    entry.runtime_data = coordinator
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    
+
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    
-    if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id, None)
-    
-    return unload_ok
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
