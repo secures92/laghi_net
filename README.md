@@ -11,9 +11,9 @@ This is a custom Home Assistant integration for monitoring Italian lake data fro
   - Inflow Rate (m³/s)
   - Outflow Rate (m³/s)  
   - Fill Percentage (%)
-- **Proper HA Integration**: Uses Home Assistant sensor entities with appropriate icons and state classes
-- **Error Handling**: Graceful handling of API failures without breaking Home Assistant
-- **Configurable Updates**: Customizable scan intervals (default 15 minutes)
+- **Proper HA Integration**: Config-entry based integration following Home Assistant best practices
+- **Error Handling**: Graceful handling of API failures — temporary outages trigger auto-retry, permanent errors are surfaced clearly in the UI
+- **Configurable Updates**: Customizable scan intervals (default 30 minutes)
 - **Timestamp Tracking**: Includes last update timestamp for each measurement
 
 ## Installation
@@ -22,13 +22,14 @@ This is a custom Home Assistant integration for monitoring Italian lake data fro
 ### Manual Installation
 
 1. Copy the entire `custom_components/laghi/` folder to your Home Assistant `custom_components/` directory
-   
+
    Your folder structure should look like:
    ```
    <config_dir>/
    ├── custom_components/
    │   └── laghi/
    │       ├── __init__.py
+   │       ├── coordinator.py
    │       ├── sensor.py
    │       ├── laghi.py
    │       ├── const.py
@@ -37,29 +38,13 @@ This is a custom Home Assistant integration for monitoring Italian lake data fro
 
 2. Restart Home Assistant completely
 
-3. Add the following to your `configuration.yaml` file:
+3. Go to **Settings → Devices & Services → Add Integration** and search for **Laghi.net**
 
-```yaml
-# Example configuration.yaml entry
-sensor:
-  - platform: laghi
-    scan_interval: 900  # Optional: update every 15 minutes (default)
-    lakes:  # Optional: specify which lakes to monitor (default: all lakes)
-     - "Lago Maggiore"
-     - "Lago di Como" 
-     - "Lago d'Iseo"
-     - "Lago d'Idro"
-     - "Lago di Garda"
-```
+4. The integration will fetch data automatically — no `configuration.yaml` changes required
 
-4. Restart Home Assistant again to load the configuration
+## Configuration
 
-## Configuration Options
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `scan_interval` | integer | 900 | Update interval in seconds (minimum 300 seconds / 5 minutes) |
-| `lakes` | list | All lakes | List of lakes to monitor (see available lakes below) |
+This integration is configured via the Home Assistant UI (config entries). No `configuration.yaml` setup is needed.
 
 ### Available Lakes
 
@@ -69,42 +54,7 @@ sensor:
 - `Lago d'Idro`
 - `Lago di Garda`
 
-### Example Advanced Configuration
-
-```yaml
-sensor:
-  - platform: laghi
-    scan_interval: 900  # Update every 15 minutes
-    lakes:  # Monitor only specific lakes
-      - "Lago Maggiore"
-      - "Lago di Como"
-```
-
-### Configuration Examples
-
-**Monitor all lakes (default):**
-```yaml
-sensor:
-  - platform: laghi
-```
-
-**Monitor only Lago Maggiore:**
-```yaml
-sensor:
-  - platform: laghi
-    lakes:
-      - "Lago Maggiore"
-```
-
-**Monitor northern lakes only:**
-```yaml
-sensor:
-  - platform: laghi
-    lakes:
-      - "Lago Maggiore"
-      - "Lago di Como"
-      - "Lago d'Iseo"
-```
+By default all 5 lakes are monitored. You can limit which lakes are tracked via the integration options in **Settings → Devices & Services → Laghi.net → Configure**.
 
 ## Sensor Entities
 

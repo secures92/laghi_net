@@ -8,9 +8,10 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_SCAN_INTERVAL, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryError, ConfigEntryNotReady
+from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .const import AVAILABLE_LAKES, CONF_LAKES, DEFAULT_SCAN_INTERVAL
-from .sensor import LaghiDataUpdateCoordinator
+from .coordinator import LaghiDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,12 +46,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     try:
         await coordinator.async_config_entry_first_refresh()
-    except ConfigEntryError:
+    except ConfigEntryNotReady:
         raise
-    except Exception as err:
+    except (TimeoutError, OSError, UpdateFailed) as err:
         raise ConfigEntryNotReady(
             f"Failed to fetch initial data from laghi.net: {err}"
         ) from err
+    except ConfigEntryError:
+        raise
+    except (ValueError, TypeError) as err:
+        raise ConfigEntryError(
+            f"Invalid response while setting up laghi integration: {err}"
+        ) from err
+    except Exception as err:
+        raise ConfigEntryError(f"Unexpected setup failure: {err}") from err
 
     entry.runtime_data = coordinator
 
@@ -65,6 +74,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
-    """Set up the Laghi.net component from configuration.yaml."""
-    # This integration supports configuration via configuration.yaml
+    """Set up the Laghi.net component."""
     return True
